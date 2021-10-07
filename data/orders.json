@@ -8,8 +8,8 @@
     },
     {
         "customer_name": "bob",
-        "customer_address": "7 brindle avenue",
-        "customer_phone": "0789887334",
+        "customer_address": "aaaaa",
+        "customer_phone": "011111",
         "courier": 2,
         "status": "preparing"
     }

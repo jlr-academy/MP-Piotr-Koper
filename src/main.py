@@ -30,7 +30,7 @@ def main_menu():
                 elif mm_options == 2:
                     sub_menu("courier", couriers_list)
                 elif mm_options == 3:
-                    orders_menu("orders", orders_list)
+                    orders_menu()
             else:
                 raise ValueError 
         except (TypeError, ValueError):
@@ -69,7 +69,7 @@ def sub_menu(item_name: str, item_list: List):
             time.sleep(0.5)
 
 #Order Menu Function
-def orders_menu(item_name: str, item_list: List):
+def orders_menu():
     while True:
         try:
             os.system('CLS')
@@ -83,7 +83,7 @@ def orders_menu(item_name: str, item_list: List):
                             5. Delete order
                             
                             Please pick required menu option: """))
-            if om_options in [0,1,2,3,4]:
+            if om_options in [0,1,2,3,4,5]:
                 if om_options == 0:
                     break
                 elif om_options == 1:
@@ -193,7 +193,7 @@ def item_updt(item_name, item_list):
             time.sleep(0.5)
 
 #Removing Function
-def item_del(item_name: str, item_list: List):
+def item_del(item_name, item_list):
     if item_name == 'order':
         for i in range(len(item_list)):
             print(f" Index [{i}] - {item_list[i]}")
@@ -243,17 +243,17 @@ def order_updt(item_name, item_list):
         if key == "courier":
             for index, name in enumerate(couriers_list):
                 print(f"[{index}] - {name}")
-            value = int(input("\n Pick new courier to be assign to this order. Use index value: "))
+            value = input("\n Pick new courier to be assign to this order. Use index value: ")
             if value != "":
-                order_dic.update({key : value})
+                order_dic.update({key : int(value)})
             else:
                 continue
         elif key == "status":
             for index, name in enumerate(orders_status_list):
                 print(f"[{index}] - {name}")
-            index_choice = int(input(f"\n What is the new order status? Use index value. "))
-            value = orders_status_list[index_choice]
-            if value != "":
+            index_choice = input(f"\n What is the new order status? Use index value. ")
+            if index_choice != "":
+                value = orders_status_list[int(index_choice)]
                 order_dic.update({key : value})
             else:
                 continue
@@ -263,21 +263,5 @@ def order_updt(item_name, item_list):
                 order_dic.update({key : value})
             else:
                 continue
-#     print(order_dic)
-#     # if x in range(len(item_list)):
-#     #     if item_name == 'order':
-#     #         print(item_list[x])
-#     #         for i in range(len(orders_status_list)):
-#     #             print(f" Index [{i}] - {orders_status_list[i]}")
-#     #         z =  int(input(f"\n What is the new order status? Use index value. "))
-#     #         order_dic = item_list[x]
-#     #         order_dic["status"] = orders_status_list[z]
-#     #         print(f"\n Order status has been updated to {orders_status_list[z]}")
-#     #         menu_dec(item_name, item_list)
-            
-
-
-# order_updt('order', orders_list)
-
 main_menu()
 
