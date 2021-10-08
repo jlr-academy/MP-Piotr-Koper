@@ -9,11 +9,12 @@ def main():
     products_list = load_data('products')
     couriers_list = load_data('couriers')
     orders_list = load_data('orders')
+    order_status_list = ['preparing', 'finalizing', 'completed']
 
-    main_menu(products_list, couriers_list, orders_list)
+    main_menu(products_list, couriers_list, orders_list, order_status_list)
 
 #Main Menu Function
-def main_menu(products_list: List, couriers_list: List, orders_list: List):
+def main_menu(products_list: List, couriers_list: List, orders_list: List, order_status_list: List):
     
     while True:
         try:
@@ -35,7 +36,7 @@ def main_menu(products_list: List, couriers_list: List, orders_list: List):
                 elif mm_options == 2:
                     sub_menu("courier", couriers_list)
                 elif mm_options == 3:
-                    orders_menu(orders_list, couriers_list)
+                    orders_menu(orders_list, couriers_list, order_status_list)
             else:
                 raise ValueError 
         except (TypeError, ValueError):
@@ -76,7 +77,7 @@ def sub_menu(item_name: str, item_list: List):
             time.sleep(0.5)
 
 #Order Menu Function
-def orders_menu(orders_list: List, couriers_list: List):
+def orders_menu(orders_list: List, couriers_list: List, order_status_list: List):
 
     while True:
         try:
@@ -100,11 +101,11 @@ def orders_menu(orders_list: List, couriers_list: List):
                 elif om_options == 2:
                     new_order(orders_list, couriers_list)
                 elif om_options == 3:
-                    ord_status_updt('order', orders_list)
+                    ordr_status_updt('order', orders_list, order_status_list)
                 elif om_options == 4:
-                    order_updt('order', orders_list)
+                    order_updt('order', orders_list, couriers_list, order_status_list)
                 elif om_options == 5:
-                    order_del('order', orders_list)
+                    item_del('order', orders_list)
             else:
                 raise ValueError 
         except (TypeError, ValueError):
@@ -127,15 +128,16 @@ def save_and_exit(products_list: List, couriers_list: List, orders_list: List):
 
 #List View Function
 def list_view(item_name: str, item_list: List):
+    
     os.system('CLS')
     print(f"\n {item_name.title()} list:")
     print("-----------------")
     for index, name in enumerate(item_list):
         print(f"[{index}] - {name}")
-    input("\n Press 'Enter' to continue...")
+    time.sleep(1)
 
 #Adding Fuction
-def new_item(item_name, item_list: List):
+def new_item(item_name: str, item_list: List):
     
     while True:
         os.system('CLS')
@@ -167,6 +169,7 @@ def new_order(orders_list: List, couriers_list: List):
 
 #Menu User Decison Fuction
 def menu_dec(item_name: str, item_list: List):
+    
     m_choice = input(f"\n Would you like to come back to the '{item_name.title()} menu'? (y/n) ").lower()
     if (m_choice != 'y' and m_choice != 'n'):
         print("\n Wrong option selected, please try again..")
@@ -177,6 +180,113 @@ def menu_dec(item_name: str, item_list: List):
             return
         else:
             main_menu()
+
+#Updating Products & Couriers Function
+def item_updt(item_name: str, item_list: List):
+
+    while True:
+        try:
+            os.system('CLS')
+            list_view(item_name, item_list)
+            x = int(input(f"\n Which {item_name} would you like to update? Use {item_name} index value. "))
+            if x in range(len(item_list)):
+                while True:
+                    y = input(f"\n What is the new {item_name} name? ").lower().title()      
+                    if y in item_list:
+                        print(f"\n {y} already exists.Please try again... ")
+                    else:
+                        os.system('CLS')
+                        print(f"\n {item_list[x]} has been updated to {y} ")
+                        item_list[x] = y
+                        print(f"\n New {item_name} list: \n")
+                        for i in range(len(item_list)):
+                            print(f" Index [{i}] - {item_list[i]}")
+                        menu_dec(item_name, item_list)
+                        break
+            else:
+                raise ValueError
+        except (TypeError, ValueError):
+            print("\n Selected option doesn't meet required criteria, please try again..")
+            time.sleep(0.5)
+
+#Updating Function
+def ordr_status_updt(item_name: str, item_list: List, order_status_list: List):
+    while True:
+        try:
+            os.system('CLS')
+            list_view(item_name, item_list)
+            x = int(input(f"\n Which {item_name} would you like to update? Use {item_name} index value. "))
+            if x in range(len(item_list)):
+                    for i in range(len(order_status_list)):
+                        print(f" Index [{i}] - {order_status_list[i]}")
+                    z =  int(input(f"\n Please use index value to assign new order status. "))
+                    order_dic = item_list[x]
+                    order_dic["status"] = order_status_list[z]
+                    print(f"\n Order status has been updated to {order_status_list[z]}")
+                    menu_dec(item_name, item_list)
+                    break
+            else:
+                raise ValueError
+        except (TypeError, ValueError):
+            print("\n Selected option doesn't meet required criteria, please try again..")
+            time.sleep(0.5)
+
+def order_updt(item_name: str, item_list: List, couriers_list: List, order_status_list: List):
+    os.system('CLS')
+    for i in range(len(item_list)):
+        print(f" Index [{i}] - {item_list[i]}")
+    x = int(input(f"\n Which {item_name} would you like to update? Use {item_name} index value. "))
+    order_dic = item_list[x]
+    for key, value in order_dic.items():
+        if key == "courier":
+            for index, name in enumerate(couriers_list):
+                print(f"[{index}] - {name}")
+            value = input("\n Pick new courier to be assign to this order. Use index value: ")
+            if value != "":
+                order_dic.update({key : int(value)})
+            else:
+                continue
+        elif key == "status":
+            for index, name in enumerate(order_status_list):
+                print(f"[{index}] - {name}")
+            index_choice = input(f"\n What is the new order status? Use index value. ")
+            if index_choice != "":
+                value = order_status_list[int(index_choice)]
+                order_dic.update({key : value})
+            else:
+                continue
+        else:
+            value = input(f"What is the new {key}: ")
+            if value != "":
+                order_dic.update({key : value})
+            else:
+                continue
+
+def item_del(item_name, item_list):
+    if item_name == 'order':
+        list_view(item_name, item_list)
+        del_choice = int(input(f"\n Which {item_name} would you like to delete? Use {item_name} index value."))
+        item_list.pop(del_choice)
+    else:
+        while True:
+            os.system('CLS')
+            print(f"\n {item_list}")
+            z = input(f"\n Which {item_name} would you like to delete? ").lower().title()
+            if z not in item_list:
+                print(f"\n Chosen {item_name} not in the {item_list} list. Please try again...")
+                time.sleep(0.5)
+            else:
+                decision = input(f"\n Are you sure you want to remove {z} ( y / n ): ")
+                if decision == 'y':
+                    item_list.remove(z)
+                    print(f"\n {z} has been removed.")
+                    new_list = item_list
+                    print(f"\n New {item_name} list: {new_list}")
+                    menu_dec(item_name, item_list)
+                    break
+                else:
+                    menu_dec(item_name, item_list)
+                    break
 
 if __name__ == "__main__":
     main()
