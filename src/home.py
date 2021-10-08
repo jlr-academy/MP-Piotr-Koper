@@ -105,7 +105,7 @@ def orders_menu(orders_list: List, couriers_list: List, order_status_list: List)
                 elif om_options == 4:
                     order_updt('order', orders_list, couriers_list, order_status_list)
                 elif om_options == 5:
-                    order_del('order', orders_list)
+                    item_del('order', orders_list)
             else:
                 raise ValueError 
         except (TypeError, ValueError):
@@ -261,6 +261,32 @@ def order_updt(item_name: str, item_list: List, couriers_list: List, order_statu
                 order_dic.update({key : value})
             else:
                 continue
+
+def item_del(item_name, item_list):
+    if item_name == 'order':
+        list_view(item_name, item_list)
+        del_choice = int(input(f"\n Which {item_name} would you like to delete? Use {item_name} index value."))
+        item_list.pop(del_choice)
+    else:
+        while True:
+            os.system('CLS')
+            print(f"\n {item_list}")
+            z = input(f"\n Which {item_name} would you like to delete? ").lower().title()
+            if z not in item_list:
+                print(f"\n Chosen {item_name} not in the {item_list} list. Please try again...")
+                time.sleep(0.5)
+            else:
+                decision = input(f"\n Are you sure you want to remove {z} ( y / n ): ")
+                if decision == 'y':
+                    item_list.remove(z)
+                    print(f"\n {z} has been removed.")
+                    new_list = item_list
+                    print(f"\n New {item_name} list: {new_list}")
+                    menu_dec(item_name, item_list)
+                    break
+                else:
+                    menu_dec(item_name, item_list)
+                    break
 
 if __name__ == "__main__":
     main()

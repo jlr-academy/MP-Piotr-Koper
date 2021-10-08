@@ -57,7 +57,7 @@ def sub_menu(item_name: str, item_list: List):
                 elif sm_options == 1:
                     list_view(item_name, item_list)
                 elif sm_options == 2:
-                    new_item(item_name, item_list)
+                    new_item(item_name, item_list, input)
                 elif sm_options == 3:
                     item_updt(item_name, item_list)
                 elif sm_options == 4:
@@ -125,7 +125,7 @@ def list_view(item_name, item_list):
     input("\n Press 'Enter' to continue...")
 
 #Adding Fuction
-def new_item(item_name, item_list: List):
+def new_item(item_name, item_list: List, input):
     if item_name == 'order':
         os.system('CLS')
         order_dic = {}
@@ -151,7 +151,7 @@ def new_item(item_name, item_list: List):
                 item_list.append(x) 
                 print(f"\n {x} has been added.")
                 print(f"\n New {item_name} list: {item_list}")
-                menu_dec(item_name, item_list)
+                # menu_dec(item_name, item_list)
                 break
             
 #Updating Function
@@ -263,5 +263,7 @@ def order_updt(item_name, item_list):
                 order_dic.update({key : value})
             else:
                 continue
-main_menu()
+
+if __name__ == "__main__":
+    main_menu()
 
