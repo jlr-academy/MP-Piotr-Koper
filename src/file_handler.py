@@ -1,38 +1,44 @@
 import os
-import json
 from typing import List
+import csv
 
-def load_data(products_list: List, couriers_list: List, orders_list: List):
+def load_data(item_name: str):
+
+    item_list = []
+    path = f"..\data\{item_name}.csv"
+
     try:
-        with open('C:\\Users\\pkoper\\Infinity_Works_JLR_Training\\miniproject\\data\\products.txt', 'r') as p_file:
-            for line in p_file.readlines():
-                products_list.append(line.strip())
 
-        with open('C:\\Users\\pkoper\\Infinity_Works_JLR_Training\\miniproject\\data\\couriers.txt', 'r') as c_file:
-            for line in c_file.readlines():
-                couriers_list.append(line.strip())
-
-        with open('C:\\Users\\pkoper\\Infinity_Works_JLR_Training\\miniproject\\data\\orders.json') as o_file:
-            orders = json.load(o_file)
-            orders_list.extend(orders)
+        with open(os.path.join(os.path.dirname(__file__), path), 'r') as file:
+            reader = csv.DictReader(file)
+            items = list(reader)
+            item_list.extend(items)
 
     except FileNotFoundError as fnfd:
         print("File not found" + str(fnfd))
     except Exception as e:
         print("Something went wrong" + str(e))
 
-def save_data(products_list: List, couriers_list: List, orders_list: List):
+    return item_list
+
+
+def save_data(item_name: str, item_list: List):
+
+    path = f"..\data\{item_name}.csv"
+    
+    if item_name == "products":
+        header = ["name", "price"]
+    elif item_name == "couriers":
+        header = ["name", "phone"]
+    elif item_name == "orders":
+        header = ["customer_name", "customer_address", "customer_phone", "courier", "status", "items"]
+
     try:
-        with open('C:\\Users\\pkoper\\Infinity_Works_JLR_Training\\miniproject\\data\\products.txt', 'w') as p_file:
-            for item in products_list:
-                p_file.write(item + '\n')
-
-        with open('C:\\Users\\pkoper\\Infinity_Works_JLR_Training\\miniproject\\data\\couriers.txt', 'w') as c_file:
-            for item in couriers_list:
-                c_file.write(item + '\n')
-
-        with open('C:\\Users\\pkoper\\Infinity_Works_JLR_Training\\miniproject\\data\\orders.json', 'w') as o_file:
-                json.dump(orders_list, o_file)
-                
+        
+        with open(os.path.join(os.path.dirname(__file__), path), 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames = header)
+            writer.writeheader()
+            writer.writerows(item_list)
+            
     except Exception as e:
         print("Something went wrong:" + str(e))
