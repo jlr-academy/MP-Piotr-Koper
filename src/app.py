@@ -2,7 +2,7 @@ import os
 import time
 from typing import List, Dict
 from file_handler import load_data, save_data
-from utils import index_view, does_index_exist
+from utils import index_view, does_index_exist, user_idx_choice_check, end_of_task_choice
 
 # Main Function
 def main():
@@ -86,7 +86,7 @@ def orders_menu(products_list: List, couriers_list: List, orders_list: List, ord
         if om_choice == '0':
             break
         elif om_choice == '1':
-            list_view('order', orders_list)
+            orders_view(orders_list)
         elif om_choice == '2':
             add_new_order(products_list, couriers_list, orders_list)
         elif om_choice == '3':
@@ -143,10 +143,10 @@ def add_new_item(item_name: str, item_list: List):
         while True:
             c_name = input(f"\tWhat is the new {item_name} name? ").lower().title()
             if item_list == [] or not any(courier_dic["name"] == c_name for courier_dic in item_list):
-                c_price = input(f"\tWhat is the {c_name} phone number? ")
+                c_phone = input(f"\tWhat is the {c_name} phone number? ")
                 courier_dic = {
                     "name": c_name,
-                    "phone": c_price   
+                    "phone": c_phone   
                 }
                 print(f"\t{courier_dic} has been created")
                 time.sleep(1)
@@ -164,185 +164,165 @@ def add_new_order(products_list: List, couriers_list: List, orders_list: List):
     o_customer_name = input("\tCustomer name: ")
     o_customer_address = input("\tCustomer address: ")
     o_customer_phone = input("\tCustomer phone number: ")
+    o_courier = str(user_idx_choice_check('courier', couriers_list, 'assigned'))
+    o_status = "preparing" 
     while True:
         try:
             os.system('cls')
-            index_view('courier', couriers_list)
-            o_courier = int(input("\tPick courier to be assign to this order. Use index value: "))
-            if o_courier in range(len(couriers_list)):
-                o_status = "preparing" 
-                while True:
-                    try:
-                        os.system('cls')
-                        index_view('product', products_list)
-                        o_items = [int(x) for x in input("\tPick products to be added to this order. Use index value and separate with comma: ").split(',')]
-                        if does_index_exist(products_list, o_items) is True:
-                            order_dic = {
-                                "customer_name": o_customer_name,
-                                "customer_address": o_customer_address,
-                                "customer_phone": o_customer_phone,
-                                "courier": o_courier,
-                                "status": o_status,
-                                "items": o_items
-                            }
-                            orders_list.append(order_dic)
-                            print("\tOrder logged and status set to 'PREPARIG'...")
-                            time.sleep(2)
-                            break
-                        else:
-                            print("\tSelected products out of range. Please try again...")
-                            time.sleep(0.5)  
-                    except ValueError:
-                        print("\tInvalid choice. Please try again...")
-                        time.sleep(0.5)
-                break         
+            index_view('product', products_list)
+            o_items = [int(x) for x in input("\tPick products to be added to this order. Use index value and separate with comma: ").split(',')]
+            if does_index_exist(products_list, o_items) is True:
+                order_dic = {
+                    "customer_name": o_customer_name,
+                    "customer_address": o_customer_address,
+                    "customer_phone": o_customer_phone,
+                    "courier": o_courier,
+                    "status": o_status,
+                    "items": o_items
+                }
+                orders_list.append(order_dic)
+                print("\tOrder logged and status set to 'PREPARIG'...")
+                time.sleep(2)
+                break
             else:
-                raise ValueError
+                print("\tSelected products out of range. Please try again...")
+                time.sleep(0.5)  
         except ValueError:
             print("\tInvalid choice. Please try again...")
-            time.sleep(0.5) 
-    
+            time.sleep(0.5)
+
 #Updating Products & Couriers Function - COMPLETE
 def item_updt(item_name: str, item_list: List):
-
     while True:
-        try:
-            os.system('cls')
-            index_view(item_name, item_list)
-            x = int(input(f"\n Which {item_name} would you like to update? Use {item_name} index value. "))
-            if x in range(len(item_list)):
-                while True:
-                    try:
-                        os.system('cls')
-                        item_dict: Dict = item_list[x]                   
-                        for index, (key, value) in enumerate(item_dict.items()):
-                            print(f"[{index}] - {key} - {value}")
-                        keys = list(item_dict)
-                        dict_choice = int(input("\n Which element would you like to update? Use index value. "))
-                        if dict_choice in range(len(list(item_dict))):
-                            value = input(f" What is the new {keys[dict_choice]}: ")
-                            if value != "":
-                                item_dict.update({keys[dict_choice] : value})
-                                print(f"{keys[dict_choice].title()} has been updated")
-                                time.sleep(0.5)
-                                break
-                            else:
-                                pass
-                        else:
-                            raise ValueError
-                    except  ValueError:
-                        print(" Invalid choice. Please try again...")
-                        time.sleep(0.5)
+        idx_choice = user_idx_choice_check(item_name, item_list, 'updated')
+        while True:
+            try:
                 os.system('cls')
-                decision = input(f" Would you like to update another {item_name}? (y / n) ")
-                if decision == 'y':
-                    pass
+                item_dict: Dict = item_list[idx_choice]
+                print(f"\t{item_dict} details:")                   
+                for index, (key, value) in enumerate(item_dict.items()):
+                    print(f"\t[{index}] - {key} - {value}")
+                keys = list(item_dict)
+                dict_choice = int(input("\tWhich element would you like to update? Use index value. "))
+                if dict_choice in range(len(list(item_dict))):
+                    value = input(f"\tWhat is the new {keys[dict_choice]}: ")
+                    if value != "":
+                        item_dict.update({keys[dict_choice] : value})
+                        print(f"\t{keys[dict_choice].title()} has been updated")
+                        time.sleep(0.5)
+                        break
+                    else:
+                        pass
                 else:
-                    break
-            else:
-                raise ValueError     
-        except ValueError:
-            print(" Invalid choice. Please try again...")
-            time.sleep(0.5)
-        
+                    raise ValueError
+            except  ValueError:
+                print("\tInvalid choice. Please try again...")
+                time.sleep(0.5)
+        if end_of_task_choice(item_name, 'update') == False:
+            break
+        else:
+            continue
+        # os.system('cls')
+        # decision = input(f" Would you like to update another {item_name}? (y / n) ")
+        # if decision == 'y':
+        #     pass
+        # else:
+        #     break
+
 #Updating Order Status Function - COMPLETE
 def order_status_updt(orders_list: List, order_status_list: List):
     while True:
-        try:
-            os.system('cls')
-            index_view('order', orders_list)
-            x = int(input(f"\n Which order status would you like to update? Use order index value. "))
-            if x in range(len(orders_list)):
-                while True:
-                    try:
-                        os.system('cls')
-                        index_view('order status', order_status_list )
-                        z =  int(input(f"\n Please use index value to assign new order status. "))
-                        if z in range(len(order_status_list)):
-                            order_dic = orders_list[x]
-                            order_dic["status"] = order_status_list[z]
-                            print(f"\n Order status has been updated to {order_status_list[z]}")
-                            time.sleep(0.5)
-                            break
-                        else:
-                            raise ValueError
-                    except ValueError:
-                        print(" Invalid choice. Please try again...")
-                        time.sleep(0.5)
+        o_idx_choice = user_idx_choice_check('order', orders_list, 'updated')
+        os_idx_choice = user_idx_choice_check('order status', order_status_list, 'updated')
+        order_dic = orders_list[o_idx_choice]
+        order_dic["status"] = order_status_list[os_idx_choice]
+        print(f"\tOrder status has been updated to {order_status_list[os_idx_choice]}")
+        time.sleep(0.5)
+        decision = input("\tWould you like to update another order status? (y / n) ")
+        if decision == 'y':
+            pass
+        else:
+            break
+
+#Updating Order Details Function - COMPLETE
+def order_updt(products_list: List, couriers_list: List, orders_list: List, order_status_list: List):
+    while True:
+        o_idx_choice = user_idx_choice_check('order', orders_list, 'updated')
+        while True:
+            try:
                 os.system('cls')
-                decision = input(" Would you like to update another order status? (y / n) ")
+                order_dict: Dict = orders_list[o_idx_choice]
+                print(f"\tCustomer order details:")
+                for index, (key, value) in enumerate(order_dict.items()):
+                    print(f"\t[{index}] - {key} - {value}")
+                keys = list(order_dict)
+                dict_choice = int(input("\tPlease use index value for order element to be update: "))
+                if keys[dict_choice] == 'courier':
+                    while True:
+                        try:
+                            os.system('cls')
+                            index_view('courier', couriers_list)
+                            value = input("\tPlease use index value for new courier to be assigned: ")
+                            if value == "":
+                                break
+                            elif int(value) not in range(len(couriers_list)):
+                                raise ValueError
+                            else:    
+                                order_dict.update({keys[dict_choice] : int(value)})
+                                print(f"\tCourier updated to {value}: {couriers_list[int(value)]}")
+                                break
+                        except ValueError:
+                            print("\tInvalid choice. Please try again...")
+                elif keys[dict_choice] == 'status':
+                    while True:
+                        try:
+                            os.system('cls')
+                            index_view('status', order_status_list)
+                            index_choice = input(f"\tPlease use index value for new order status to be assigned: ")
+                            if index_choice == "":
+                                break
+                            elif int(index_choice) not in range(len(order_status_list)):
+                                raise ValueError
+                            else:
+                                value = order_status_list[int(index_choice)]
+                                order_dict.update({keys[dict_choice] : value})
+                                print(f"\tOrder status updated to {value}")
+                                break
+                        except ValueError:
+                            print("\tInvalid choice. Please try again...")
+                elif keys[dict_choice] == 'items':
+                    while True:
+                        try:
+                            os.system('cls')
+                            index_view('product',products_list)
+                            o_items: List = [int(x) for x in input("\tPick products to be added / updated for this order. Use index value and separate with comma: ").split(',')]
+                            if o_items != "":
+                                if does_index_exist(products_list, o_items) is True:
+                                    order_dict.update({keys[dict_choice] : o_items})
+                                    print(f"\tOrder items updated to {o_items}")
+                                    break
+                                else:
+                                    print("\tSelected products out of range. Please try again...")
+                                    time.sleep(0.5)
+                            else:
+                                pass
+                        except ValueError:
+                            print("\tInvalid choice. Please try again...")
+                else:
+                    value = input(f"\tWhat is the new {keys[dict_choice]}: ")
+                    if value != "":
+                        order_dict.update({keys[dict_choice] : value})
+                    else:
+                        pass
+                decision = input("\tWould you like to change another element? (y / n) ")
                 if decision == 'y':
                     pass
                 else:
                     break
-            else:
-                raise ValueError
-        except ValueError:
-            print(" Invalid choice. Please try again...")
-            time.sleep(0.5)
-
-#Updating Order Details Function - TBC
-def order_updt(products_list: List, couriers_list: List, orders_list: List, order_status_list: List):
-    while True:
-        try:
-            os.system('cls')
-            index_view('order', orders_list)
-            x = int(input(f"\tWhich order would you like to update? Use order index value. "))
-            if x in range(len(orders_list)):
-                while True:
-                    os.system('cls')
-                    order_dict: Dict = orders_list[x]
-                    for index, (key, value) in enumerate(order_dict.items()):
-                        print(f"[{index}] - {key} - {value}")
-                    keys = list(order_dict)
-                    dict_choice = int(input("\tWhich element would you like to update? Use index value. "))
-                    if keys[dict_choice] == 'courier':
-                        index_view('courier', couriers_list)
-                        value = input("\tPick new courier to be assign to this order. Use index value: ")
-                        if value != "":
-                            order_dict.update({keys[dict_choice] : int(value)})
-                        else:
-                            pass
-                    elif keys[dict_choice] == 'status':
-                        index_view('status', order_status_list)
-                        index_choice = input(f"\tWhat is the new order status? Use index value. ")
-                        if index_choice != "":
-                            value = order_status_list[int(index_choice)]
-                            order_dict.update({keys[dict_choice] : value})
-                        else:
-                            pass
-                    elif keys[dict_choice] == 'items':
-                        while True:
-                            try:
-                                index_view('product',products_list)
-                                o_items: List = [int(x) for x in input("\tPick products to be added / updated for this order. Use index value and separate with comma: ").split(',')]
-                                if o_items != "":
-                                    if does_index_exist(products_list, o_items) is True:
-                                        order_dict.update({keys[dict_choice] : o_items})
-                                        break
-                                    else:
-                                        print("\tSelected products out of range. Please try again...")
-                                        time.sleep(0.5)
-                                else:
-                                    pass
-                            except ValueError:
-                                print(" Invalid choice. Please try again...")
-                    else:
-                        value = input(f"\tWhat is the new {keys[dict_choice]}: ")
-                        if value != "":
-                            order_dict.update({keys[dict_choice] : value})
-                        else:
-                            pass
-                    decision = input("\tWould you like to change another element? (y / n) ")
-                    if decision == 'y':
-                        pass
-                    else:
-                        break            
-            else:
-                raise ValueError                
-        except (TypeError, ValueError):
-            print(" Invalid choice. Please try again...")
-            time.sleep(0.5)
+                break
+            except (ValueError, IndexError):
+                print("\tInvalid choice. Please try again...")
+                time.sleep(0.5)
 
 #Product, Courier & Order Deletion Function - COMPLETE
 def item_del(item_name: str, item_list: List):
@@ -374,8 +354,28 @@ def item_del(item_name: str, item_list: List):
             else:
                 raise ValueError
         except (TypeError, ValueError):
-            print(" Invalid choice. Please try again...")
+            print("\tInvalid choice. Please try again...")
             time.sleep(0.5) 
             
+def orders_view(orders_list):
+    #BONUS list orders by status or courier
+    os.system('cls')
+    index_view('orders', orders_list)
+    print("""
+        Please pick a sorting option:
+        [1]. 'status' 
+        [2]. 'courier'""")
+    choice = input()
+    if choice == '1' or choice == 'status':
+        orders_list.sort(key=lambda x: x.get('status'))
+        index_view('orders', orders_list)
+        os.system('pause')
+    elif choice == '2' or choice == 'courier':
+        orders_list.sort(key=lambda x: x.get('courier'))
+        index_view('orders', orders_list)
+        os.system('pause')
+    else:
+        print(" Invalid choice. Please try again...")
+
 if __name__ == "__main__":
     main()
