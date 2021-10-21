@@ -1,25 +1,51 @@
 import os
 import time
+import pymysql
+from dotenv import load_dotenv
 from typing import List, Dict
 from file_handler import load_data, save_data
-from utils import index_view, does_index_exist, user_idx_choice_check, end_of_task_choice
+from order_mgmt import orders_menu
+from utils import index_view, user_idx_choice, end_of_task_choice, clear_screen
+from products_mgmt import product_menu
+from couriers_mgmt import courier_menu
+
+# products = [Product(1, 'Tea', 1.0, 20),Product(1, 'Plum', 5.0, 100)]
 
 # Main Function
 def main():
+    
+    # Load environment variables from .env file
+    load_dotenv()
+    host = os.environ.get("mysql_host")
+    user = os.environ.get("mysql_user")
+    password = os.environ.get("mysql_pass")
+    database = os.environ.get("mysql_db")
+
+    # Establish a database connection
+    connection = pymysql.connect(
+        host,
+        user,
+        password,
+        database
+    )
+
+    # A cursor is an object that represents a DB cursor,
+    # which is used to manage the context of a fetch operation.
+    cursor = connection.cursor()
     
     products_list = load_data('products')
     couriers_list = load_data('couriers')
     orders_list = load_data('orders')
     order_status_list = ['preparing', 'finalizing', 'completed']
 
-    main_menu(products_list, couriers_list, orders_list, order_status_list)
+    main_menu(products_list, couriers_list, orders_list, order_status_list, connection, cursor)
 
 #Main Menu Function - COMPLETE
-def main_menu(products_list: List, couriers_list: List, orders_list: List, order_status_list: List):
-    
+def main_menu(products_list: List, couriers_list: List, orders_list: List, order_status_list: List, connection, cursor):
+
     mm_choice = ""
     while mm_choice != 0:
-        os.system('CLS')
+        clear_screen()
         print("""
         Main Menu:
         -------------------
@@ -31,79 +57,28 @@ def main_menu(products_list: List, couriers_list: List, orders_list: List, order
         if mm_choice == '0':
             save_and_exit(products_list, couriers_list, orders_list)                        
         elif mm_choice == '1':
-            pc_menu("product", products_list)
+            product_menu(connection, cursor)
         elif mm_choice == '2':
-            pc_menu("courier", couriers_list)
+            courier_menu("courier", couriers_list, connection, cursor)
         elif mm_choice == '3':
             orders_menu(products_list, couriers_list, orders_list, order_status_list)
         else:
             print("Invalid choice. Please try again...")
 
-#Products & Couriers Menu Function - COMPLETE
-def pc_menu(item_name: str, item_list: List):
-
-    pcm_choice = ""
-    while pcm_choice != 0:
-        os.system('CLS')
-        print(f"""
-        {item_name.title()} Menu:
-        ------------------------------
-        [0]. Return to Main Menu
-        [1]. View {item_name}s list
-        [2]. Create a new {item_name}
-        [3]. Update {item_name} details
-        [4]. Delete {item_name}""")
-        pcm_choice = input("\tPlease pick a menu option: ")
-        if pcm_choice == '0':
-            break
-        elif pcm_choice == '1':
-            list_view(item_name, item_list)
-        elif pcm_choice == '2':
-            add_new_item(item_name, item_list)
-        elif pcm_choice == '3':
-            item_updt(item_name, item_list)
-        elif pcm_choice == '4':
-            item_del(item_name, item_list)
-        else:
-            print("Invalid choice. Please try again...")
-
-#Order Menu Function - COMPLETE
-def orders_menu(products_list: List, couriers_list: List, orders_list: List, order_status_list: List, ):
-
-    om_choice = []
-    while om_choice != 0:
-        os.system('CLS')
-        print("""
-        Orders Menu:
-        ------------------------------
-        [0]. Return to Main Menu
-        [1]. View orders list
-        [2]. Create a new order
-        [3]. Update order status
-        [4]. Update existing order
-        [5]. Delete order""")
-        om_choice = input("\tPlease pick a menu option: ")
-        if om_choice == '0':
-            break
-        elif om_choice == '1':
-            orders_view(orders_list)
-        elif om_choice == '2':
-            add_new_order(products_list, couriers_list, orders_list)
-        elif om_choice == '3':
-            order_status_updt(orders_list, order_status_list)
-        elif om_choice == '4':
-            order_updt(products_list, couriers_list, orders_list, order_status_list)
-        elif om_choice == '5':
-            item_del('order', orders_list)
-        else:
-            print("Invalid choice. Please try again...")
 
 #App Exit and Save Files Function - COMPLETE
-def save_and_exit(products_list: List, couriers_list: List, orders_list: List):
+def save_and_exit(products_list: List, couriers_list: List, orders_list: List, connection, cursor):
     
     save_data('products', products_list)
     save_data('couriers', couriers_list)
     save_data('orders', orders_list)
+    
+    # Closes the cursor so will be unusable from this point 
+    cursor.close()
+
+    # Closes the connection to the DB, make sure you ALWAYS do this
+    connection.close()
+
     
     print("""
     \tAll files updated and saved.
@@ -112,17 +87,19 @@ def save_and_exit(products_list: List, couriers_list: List, orders_list: List):
     time.sleep(1)
     exit()
 
-#List View Function - COMPLETE
+
+
+#List View Function - REDUNDANT
 def list_view(item_name: str, item_list: List):
     
-    os.system('cls')
+    clear_screen()
     index_view(item_name, item_list)
     os.system('pause')
 
-#Adding new Product & Courier Fuction - COMPLETE
+#Adding new Product & Courier Fuction - REDUNDANT
 def add_new_item(item_name: str, item_list: List):
     
-    os.system('cls')
+    clear_screen()
     if item_name == 'product':
         while True:
             p_name = input(f"\tWhat is the new {item_name} name? ").lower().title()  
@@ -156,48 +133,15 @@ def add_new_item(item_name: str, item_list: List):
                 print(f"\t {c_name} already exists. Please try again...")
                 time.sleep(0.5)
 
-#Adding new Order Function - COMPLETE
-def add_new_order(products_list: List, couriers_list: List, orders_list: List):
-    
-    os.system('CLS')
-    print("\tPlease provide new order details:")
-    o_customer_name = input("\tCustomer name: ")
-    o_customer_address = input("\tCustomer address: ")
-    o_customer_phone = input("\tCustomer phone number: ")
-    o_courier = str(user_idx_choice_check('courier', couriers_list, 'assigned'))
-    o_status = "preparing" 
-    while True:
-        try:
-            os.system('cls')
-            index_view('product', products_list)
-            o_items = [int(x) for x in input("\tPick products to be added to this order. Use index value and separate with comma: ").split(',')]
-            if does_index_exist(products_list, o_items) is True:
-                order_dic = {
-                    "customer_name": o_customer_name,
-                    "customer_address": o_customer_address,
-                    "customer_phone": o_customer_phone,
-                    "courier": o_courier,
-                    "status": o_status,
-                    "items": o_items
-                }
-                orders_list.append(order_dic)
-                print("\tOrder logged and status set to 'PREPARIG'...")
-                time.sleep(2)
-                break
-            else:
-                print("\tSelected products out of range. Please try again...")
-                time.sleep(0.5)  
-        except ValueError:
-            print("\tInvalid choice. Please try again...")
-            time.sleep(0.5)
-
 #Updating Products & Couriers Function - COMPLETE
 def item_updt(item_name: str, item_list: List):
-    while True:
-        idx_choice = user_idx_choice_check(item_name, item_list, 'updated')
+
+    check = True
+    while check == True:
+        idx_choice = user_idx_choice(item_name, item_list, 'updated')
         while True:
             try:
-                os.system('cls')
+                clear_screen()
                 item_dict: Dict = item_list[idx_choice]
                 print(f"\t{item_dict} details:")                   
                 for index, (key, value) in enumerate(item_dict.items()):
@@ -218,164 +162,50 @@ def item_updt(item_name: str, item_list: List):
             except  ValueError:
                 print("\tInvalid choice. Please try again...")
                 time.sleep(0.5)
-        if end_of_task_choice(item_name, 'update') == False:
-            break
-        else:
-            continue
-        # os.system('cls')
-        # decision = input(f" Would you like to update another {item_name}? (y / n) ")
-        # if decision == 'y':
-        #     pass
-        # else:
-        #     break
+        check = end_of_task_choice(item_name, 'update')
 
-#Updating Order Status Function - COMPLETE
-def order_status_updt(orders_list: List, order_status_list: List):
-    while True:
-        o_idx_choice = user_idx_choice_check('order', orders_list, 'updated')
-        os_idx_choice = user_idx_choice_check('order status', order_status_list, 'updated')
-        order_dic = orders_list[o_idx_choice]
-        order_dic["status"] = order_status_list[os_idx_choice]
-        print(f"\tOrder status has been updated to {order_status_list[os_idx_choice]}")
-        time.sleep(0.5)
-        decision = input("\tWould you like to update another order status? (y / n) ")
-        if decision == 'y':
-            pass
-        else:
-            break
 
-#Updating Order Details Function - COMPLETE
-def order_updt(products_list: List, couriers_list: List, orders_list: List, order_status_list: List):
-    while True:
-        o_idx_choice = user_idx_choice_check('order', orders_list, 'updated')
-        while True:
-            try:
-                os.system('cls')
-                order_dict: Dict = orders_list[o_idx_choice]
-                print(f"\tCustomer order details:")
-                for index, (key, value) in enumerate(order_dict.items()):
-                    print(f"\t[{index}] - {key} - {value}")
-                keys = list(order_dict)
-                dict_choice = int(input("\tPlease use index value for order element to be update: "))
-                if keys[dict_choice] == 'courier':
-                    while True:
-                        try:
-                            os.system('cls')
-                            index_view('courier', couriers_list)
-                            value = input("\tPlease use index value for new courier to be assigned: ")
-                            if value == "":
-                                break
-                            elif int(value) not in range(len(couriers_list)):
-                                raise ValueError
-                            else:    
-                                order_dict.update({keys[dict_choice] : int(value)})
-                                print(f"\tCourier updated to {value}: {couriers_list[int(value)]}")
-                                break
-                        except ValueError:
-                            print("\tInvalid choice. Please try again...")
-                elif keys[dict_choice] == 'status':
-                    while True:
-                        try:
-                            os.system('cls')
-                            index_view('status', order_status_list)
-                            index_choice = input(f"\tPlease use index value for new order status to be assigned: ")
-                            if index_choice == "":
-                                break
-                            elif int(index_choice) not in range(len(order_status_list)):
-                                raise ValueError
-                            else:
-                                value = order_status_list[int(index_choice)]
-                                order_dict.update({keys[dict_choice] : value})
-                                print(f"\tOrder status updated to {value}")
-                                break
-                        except ValueError:
-                            print("\tInvalid choice. Please try again...")
-                elif keys[dict_choice] == 'items':
-                    while True:
-                        try:
-                            os.system('cls')
-                            index_view('product',products_list)
-                            o_items: List = [int(x) for x in input("\tPick products to be added / updated for this order. Use index value and separate with comma: ").split(',')]
-                            if o_items != "":
-                                if does_index_exist(products_list, o_items) is True:
-                                    order_dict.update({keys[dict_choice] : o_items})
-                                    print(f"\tOrder items updated to {o_items}")
-                                    break
-                                else:
-                                    print("\tSelected products out of range. Please try again...")
-                                    time.sleep(0.5)
-                            else:
-                                pass
-                        except ValueError:
-                            print("\tInvalid choice. Please try again...")
-                else:
-                    value = input(f"\tWhat is the new {keys[dict_choice]}: ")
-                    if value != "":
-                        order_dict.update({keys[dict_choice] : value})
-                    else:
-                        pass
-                decision = input("\tWould you like to change another element? (y / n) ")
-                if decision == 'y':
-                    pass
-                else:
-                    break
-                break
-            except (ValueError, IndexError):
-                print("\tInvalid choice. Please try again...")
-                time.sleep(0.5)
+#Trying to implement Class functionality for products
 
-#Product, Courier & Order Deletion Function - COMPLETE
-def item_del(item_name: str, item_list: List):
-    while True:
-        try:
-            os.system('cls')
-            index_view(item_name, item_list)
-            user_choice = int(input(f"\n Which {item_name} would you like to delete? Use {item_name} index value. "))
-            if user_choice in range(len(item_list)):
-                while True:
-                    os.system('cls')
-                    decision = input(f"\n Are you sure you want to remove {item_list[user_choice]} ( y / n ): ").lower()                
-                    if decision not in ['y','n']:
-                        print("\n Wrong option selected, please try again..")
-                    elif decision == 'y':
-                        print(f"\n {item_list[user_choice]} has been removed.")
-                        item_list.pop(user_choice)
-                        time.sleep(1)
-                        break
-                    else:
-                        print(f"\n No {item_name}s has been deleted")
-                        time.sleep(1)
-                        break
-                decision = input(f" Would you like to delete another {item_name}? (y / n) ")
-                if decision == 'y':
-                    pass
-                else:
-                    break
-            else:
-                raise ValueError
-        except (TypeError, ValueError):
-            print("\tInvalid choice. Please try again...")
-            time.sleep(0.5) 
-            
-def orders_view(orders_list):
-    #BONUS list orders by status or courier
-    os.system('cls')
-    index_view('orders', orders_list)
-    print("""
-        Please pick a sorting option:
-        [1]. 'status' 
-        [2]. 'courier'""")
-    choice = input()
-    if choice == '1' or choice == 'status':
-        orders_list.sort(key=lambda x: x.get('status'))
-        index_view('orders', orders_list)
-        os.system('pause')
-    elif choice == '2' or choice == 'courier':
-        orders_list.sort(key=lambda x: x.get('courier'))
-        index_view('orders', orders_list)
-        os.system('pause')
-    else:
-        print(" Invalid choice. Please try again...")
+# def create_new_product():
+
+#     clear_screen()
+#     product = Product(id = '0', #generated via database
+#                     name = name_duplication(),
+#                     price = float_input(),
+#                     qty = int_input)
+#     products.append(product)
+#     print(products)
+#     os.system('pause')
+#     return products
+
+# def name_duplication():
+#     while True:
+#         name = upper_case_conversion(input("\tWhat is the new product name? "))
+#         if products == [] or not any(name == i.name for i in products):
+#             return name
+#         else:
+#             print(f"\tProduct already exists. Please try again...")
+#             time.sleep(0.5)
+#             continue
+
+# def float_input():
+#     while True:
+#         try:
+#             price = float(input("\tWhat is the product price? "))
+#             return price
+#         except ValueError:
+#             print("\tInvalid input. Please try again...")
+
+# def int_input():
+#     while True:
+#         try:
+#             qty = int(input("\tWhat is the product price? "))
+#             return qty
+#         except ValueError:
+#             print("\tInvalid input. Please try again...")
+
 
 if __name__ == "__main__":
     main()
+    
