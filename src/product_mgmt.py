@@ -29,7 +29,7 @@ def product_menu(connection, cursor):
         elif choice == '4':
             product_delete(connection, cursor)
         else:
-            print("Invalid choice. Please try again...")
+            print("\n \tInvalid choice. Please try again...")
 
 #Products View from DB
 def products_view(cursor):
@@ -93,7 +93,7 @@ def product_delete(connection, cursor):
     while task_check == True:
         clear_screen()
         products_view_all(cursor)
-        id_choice = product_id_check(cursor, "\n \tPlease use Id value for product you'd like to delete? ")
+        id_choice = product_id_check(cursor, "\n \tPlease use Id value of the product you'd like to delete? ")
         cursor.execute("DELETE FROM products WHERE product_id=%s", (id_choice))
         connection.commit()
         task_check = task_choice("\n \tWould you like to delete another product? [y / n] ")

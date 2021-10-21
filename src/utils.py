@@ -89,16 +89,13 @@ def upper_case_conversion(string: str):
     
 def task_choice(details: str):
     while True:
-        clear_screen()
-        print("")
         user_choice = input(details.lower())
         if user_choice == 'y':
             return True
         elif user_choice == 'n':
             return False
         else:
-            print("")
-            print("\tInvalid choice. Please try again...")
+            print("\n \tInvalid choice. Please try again...")
 
 
 

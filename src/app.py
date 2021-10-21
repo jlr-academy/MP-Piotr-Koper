@@ -4,10 +4,10 @@ import pymysql
 from dotenv import load_dotenv
 from typing import List, Dict
 from file_handler import load_data, save_data
-from order_mgmt import orders_menu
 from utils import index_view, user_idx_choice, end_of_task_choice, clear_screen
-from products_mgmt import product_menu
-from couriers_mgmt import courier_menu
+from product_mgmt import product_menu
+from courier_mgmt import courier_menu
+from order_mgmt import orders_menu
 
 # products = [Product(1, 'Tea', 1.0, 20),Product(1, 'Plum', 5.0, 100)]
 
@@ -28,7 +28,6 @@ def main():
         password,
         database
     )
-
     # A cursor is an object that represents a DB cursor,
     # which is used to manage the context of a fetch operation.
     cursor = connection.cursor()
@@ -59,12 +58,11 @@ def main_menu(products_list: List, couriers_list: List, orders_list: List, order
         elif mm_choice == '1':
             product_menu(connection, cursor)
         elif mm_choice == '2':
-            courier_menu("courier", couriers_list, connection, cursor)
+            courier_menu(connection, cursor)
         elif mm_choice == '3':
             orders_menu(products_list, couriers_list, orders_list, order_status_list)
         else:
-            print("Invalid choice. Please try again...")
-
+            print("\n \tInvalid choice. Please try again...")
 
 #App Exit and Save Files Function - COMPLETE
 def save_and_exit(products_list: List, couriers_list: List, orders_list: List, connection, cursor):
@@ -86,8 +84,6 @@ def save_and_exit(products_list: List, couriers_list: List, orders_list: List, c
     
     time.sleep(1)
     exit()
-
-
 
 #List View Function - REDUNDANT
 def list_view(item_name: str, item_list: List):

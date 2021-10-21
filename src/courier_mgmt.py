@@ -1,10 +1,9 @@
 import os
-from typing import List
 from utils import clear_screen, couriers_view_all, upper_case_conversion
 from utils import task_choice, courier_id_check
 
 #Products & Couriers Menu Function - COMPLETE
-def courier_menu(item_name: str, item_list: List, connection, cursor):
+def courier_menu(connection, cursor):
 
     choice = ""
     while choice != 0:
@@ -27,9 +26,9 @@ def courier_menu(item_name: str, item_list: List, connection, cursor):
         elif choice == '3':
             courier_update(connection, cursor)
         elif choice == '4':
-            item_del(item_name, item_list, connection, cursor)
+            courier_delete(connection, cursor)
         else:
-            print("Invalid choice. Please try again...")
+            print("\n \tInvalid choice. Please try again...")
 
 #Products View from DB
 def couriers_view(cursor):
@@ -85,3 +84,13 @@ def courier_update(connection, cursor):
             update_task_check = task_choice("\n \tWould you like to update another element? [y / n] ")
         task_check = task_choice("\n \tWould you like to update another courier? [y / n] ")
 
+#Deleteting Product from DB
+def courier_delete(connection, cursor):
+    task_check = True
+    while task_check == True:
+        clear_screen()
+        couriers_view_all(cursor)
+        id_choice = courier_id_check(cursor, "\n \tPlease use Id value of the couirer you'd like to delete? ")
+        cursor.execute("DELETE FROM couriers WHERE courier_id=%s", (id_choice))
+        connection.commit()
+        task_check = task_choice("\n \tWould you like to delete another courier")
