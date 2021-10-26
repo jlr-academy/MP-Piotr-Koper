@@ -1,5 +1,5 @@
 .pytest_cache
 .vscode
-.venv
+.mp_venv
 __pycache__
 *.pyc

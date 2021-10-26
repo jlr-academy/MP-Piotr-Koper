@@ -22,23 +22,38 @@ def load_data(item_name: str):
     return item_list
 
 
-def save_data(item_name: str, item_list: List):
+def save_data(item_name: str, orders_list: List, cursor):
 
     path = f"..\data\{item_name}.csv"
     
     if item_name == "products":
-        header = ["name", "price"]
-    elif item_name == "couriers":
-        header = ["name", "phone"]
+        cursor.execute("""  SELECT 'Id', 'Name', 'Price', 'Qty'
+                            UNION ALL 
+                            SELECT product_id, name, price, qty FROM products""")
+        rows = cursor.fetchall()
+        with open(os.path.join(os.path.dirname(__file__), path), 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+            file.close()
+
+    if item_name == "couriers":
+        cursor.execute("""  SELECT 'Id', 'Name', 'Phone'
+                            UNION ALL
+                            SELECT courier_id, name, phone FROM couriers""")
+        rows = cursor.fetchall()
+        with open(os.path.join(os.path.dirname(__file__), path), 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+            file.close()
+    
     elif item_name == "orders":
         header = ["customer_name", "customer_address", "customer_phone", "courier", "status", "items"]
-
-    try:
+        try:
         
-        with open(os.path.join(os.path.dirname(__file__), path), 'w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames = header)
-            writer.writeheader()
-            writer.writerows(item_list)
-            
-    except Exception as e:
-        print("Something went wrong:" + str(e))
+            with open(os.path.join(os.path.dirname(__file__), path), 'w', newline='') as file:
+                writer = csv.DictWriter(file, fieldnames = header)
+                writer.writeheader()
+                writer.writerows(orders_list)
+                
+        except Exception as e:
+            print("Something went wrong:" + str(e))

@@ -1,4 +1,2 @@
-name,price
-Coke Zero,0.8
-Pepsi,1.2
-Tea,4.0
+Id,Name,Price,Qty
+1,Coke Zero,0.8000000119,10
