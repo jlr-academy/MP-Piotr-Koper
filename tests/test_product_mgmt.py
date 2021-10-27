@@ -23,7 +23,7 @@ def test_product_menu_second_option(mock_input: Mock, mock_add_new_product: Mock
 
 @patch('src.product_mgmt.update_product')
 @patch('builtins.input')
-def test_product_menu_second_option(mock_input: Mock, mock_update_product: Mock):
+def test_product_menu_third_option(mock_input: Mock, mock_update_product: Mock):
     # assemble
     mock_input.side_effect = ['3', 0]
     # act
@@ -33,7 +33,7 @@ def test_product_menu_second_option(mock_input: Mock, mock_update_product: Mock)
 
 @patch('src.product_mgmt.delete_product')
 @patch('builtins.input')
-def test_product_menu_second_option(mock_input: Mock, mock_delete_product: Mock):
+def test_product_menu_fourth_option(mock_input: Mock, mock_delete_product: Mock):
     # assemble
     mock_input.side_effect = ['4', 0]
     # act

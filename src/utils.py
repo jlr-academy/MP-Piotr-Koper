@@ -69,29 +69,29 @@ def sql_read(sql, data=None):
 
 def int_input_check(details: str):
     
-        while True:
-                value = input(details)
-                if value == "":
-                    return ""
-                else:
-                    try:
-                        number = int(value)
-                        return number
-                    except ValueError:
-                        print("\n \tInvalid input. Please try again...")
+    while True:
+        value = input(details)
+        if value == "":
+            return ""
+        else:
+            try:
+                number = int(value)
+                return number
+            except ValueError:
+                print("\n \tInvalid input. Please try again...")
 
 def float_input_check(details: str):
 
-        while True:
-            value = input(details)
-            if value == "":
-                return ""
-            else:
-                try:
-                    number = float(value)
-                    return number
-                except ValueError:
-                    print("\n \tInvalid input. Please try again...")
+    while True:
+        value = input(details)
+        if value == "":
+            return ""
+        else:
+            try:
+                number = float(value)
+                return number
+            except ValueError:
+                print("\n \tInvalid input. Please try again...")
 
 def upper_case_conversion(string: str):
     if string == "":
@@ -129,10 +129,10 @@ def view_all_products():
     for row in rows:
         print(f"\t{row[0] :<7} | {str(row[1]) :<20} | {row[2] :<10} | {row[3] :<5}")
 
-def view_unique_product(id_choice):
+def view_unique_product(product_id):
     
     sql = "SELECT product_id, name, price, stock FROM products WHERE product_id=%s"
-    rows = sql_read(sql, id_choice)
+    rows = sql_read(sql, product_id)
     
     for row in rows:
         print(f"""
@@ -154,6 +154,8 @@ def product_name_duplicate_check(details: str):
 def product_id_check(details: str):
     
     while True:
+        clear_screen()
+        view_all_products()
         id_choice = int_input_check(details)
         sql = "SELECT product_id FROM products WHERE product_id=%s"
         data_check = sql_read(sql, id_choice)
@@ -172,14 +174,14 @@ def product_stock_check(product_id, details: str):
         sql = "SELECT stock FROM products WHERE product_id=%s"
         rows = sql_read(sql, product_id)
         for row in rows:
-            qty_check = row[0] 
-        if qty_choice > qty_check:
+            stock = row[0] 
+        if qty_choice > stock:
             print(f"\n \tThere isn't enough in stock. Please use smaller amount...")
             time.sleep(1)
             continue
         else:
-            sql = """UPDATE products set stock = %s where product_id = %s"""
-            reduced_stock = qty_check - qty_choice
+            sql = "UPDATE products SET stock=%s WHERE product_id=%s"
+            reduced_stock = stock - qty_choice
             data = (reduced_stock, product_id)
             sql_execute(sql, data)
             return qty_choice
@@ -195,26 +197,25 @@ def view_all_couriers():
     for row in rows:
         print(f"\t{row[0] :<7} | {str(row[1]) :<20} | {row[2] :<10} ")
 
-
-def courier_id_check( details: str):
+def courier_id_check(details: str):
     
     while True:
         clear_screen()
         view_all_couriers()
-        id_choice = int_input_check(details)
+        courier_id = int_input_check(details)
         sql = "SELECT courier_id FROM couriers WHERE courier_id=%s"
-        data_check = sql_read(sql, id_choice)
+        data_check = sql_read(sql, courier_id)
         if not data_check:
-            print(f"\n \tCourier with Id: {id_choice} doesn't exists. Please try again...")
+            print(f"\n \tCourier with Id: {courier_id} doesn't exists. Please try again...")
         else:
-            return id_choice
+            return courier_id
 
 
 # Orders Utilities
 def view_all_orders():
     
     sql = """SELECT orders.order_id, customers.customer_name, customers.customer_address, customers.customer_phone, 
-                    couriers.courier_id, order_status.order_status, orders_products.product_id, orders_products.quantity
+                    couriers.courier_id, order_status.order_status, IFNULL(orders_products.product_id, 0) AS product_id, IFNULL(orders_products.quantity, 0) AS quantity
                 FROM orders
                 LEFT JOIN customers
                 ON orders.customer_id = customers.customer_id
@@ -227,17 +228,9 @@ def view_all_orders():
                 """
     rows = sql_read(sql)
     print("\n \tList of Orders: ")
-    print(f"\t{'Id:' :<7} | {'Customer Name:' :<20} | {'Customer Address:' :<50} | {'Customer Phone:' :<20} | {'Courier Id:' :<15} | {'Order Status:' :<15} | {'Product Id:' :<10} | {'Quantity:' :<10} ")
-    # for row in rows:
-    #     print(f"\t{row[0] :<7} | {str(row[1]) :<20} | {row[2] :<50} | {row[3] :<20} | {row[4] :<15} | {row[5] :<15} | {row[6] :<10} | {row[7] :<10} ")
-
+    print(f"\t{'Id:' :<7} | {'Customer Name:' :<17} | {'Customer Address:' :<50} | {'Customer Phone:' :<15} | {'Courier Id:' :<13} | {'Order Status:' :<15} | {'Product Id:' :<13} | {'Quantity:' :<10} ")
     for row in rows:
-        print(f"\tId: {row[0]}, Customer Name: {str(row[1])}, Customer Address: {row[2]}, Customer Phone: {row[3]}, Courier: {row[4]}, Order Status: {row[5]}, Product: {row[6]}, Quantity: {row[7]}")
-
-
-
-
-
+        print(f"\t{row[0] :<7} | {str(row[1]) :<17} | {row[2] :<50} | {row[3] :<15} | {row[4] :<13} | {row[5] :<15} | {row[6] :<13} | {row[7] :<10} ")
 
 def order_id_check(details: str):
     
@@ -248,7 +241,7 @@ def order_id_check(details: str):
         sql = "SELECT order_id FROM orders WHERE order_id=%s"
         data_check = sql_read(sql, id_choice)
         if not data_check:
-            print(f"\n \Order with Id: {id_choice} doesn't exists. Please try again...")
+            print(f"\n \tOrder with Id: {id_choice} doesn't exists. Please try again...")
             time.sleep(1)
             continue
         else:
@@ -272,29 +265,6 @@ def order_status_check(details: str):
         data_check = sql_read(sql, id_choice)
         if not data_check:
             print(f"\n \tOrder status with Id: {id_choice} doesn't exists. Please try again...")
-            time.sleep(1)
-            continue
-        else:
-            return id_choice
-
-def view_all_customers():
-    
-    sql = "SELECT customer_id, customer_name, customer_address, customer_phone FROM customers"
-    rows = sql_read(sql)
-    print("\n \tList of Customers: ")
-    for row in rows:
-        print(f"\tId: {row[0]}, Customer Name: {str(row[1])}, Customer Address: {row[2]}, Customer Phone: {row[3]}")
-
-def customer_id_check(details: str):
-    
-    while True:
-        clear_screen()
-        view_all_customers()
-        id_choice = int_input_check(details)
-        sql = "SELECT customer_id FROM customers WHERE customer_id=%s"
-        data_check = sql_read(sql, id_choice)
-        if not data_check:
-            print(f"\n \Customer with Id: {id_choice} doesn't exists. Please try again or ...")
             time.sleep(1)
             continue
         else:
@@ -327,115 +297,28 @@ def customer_review():
         else:
             print("\n \tInvalid choice. Please try again...")
 
-def order_items_review(order_id):
+# Customer Utilities
 
-    task_check = True
-    while task_check == True:
-        clear_screen()
-        view_all_products()
-        product_id = product_id_check("\n \tPlease use Id value of the product you'd like to have in the order? ")
-        quantity = product_stock_check(product_id, "\n \tHow many would you like to order? ")
-        data = (order_id, product_id, quantity)
-        sql = """INSERT INTO orders_products(order_id, product_id, quantity) 
-                VALUES(%s, %s, %s)"""
-        sql_execute(sql, data)
-
-        task_check = task_choice("\n \tWould you like to add another product to this order? [y / n] ")
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-# def order_status_choice(details: str):
-#     order_status_list = ['preparing', 'finalizing', 'completed', 'delivered', 'cancelled']
-#     while True:
-#         try:
-#             clear_screen()
-#             index_view(order_status_list)
-#             idx_choice = int(input(details))
-#             if idx_choice in range(len(order_status_list)):
-#                 return idx_choice
-#             else:
-#                 raise ValueError
-#         except ValueError:
-#             print("")
-#             print("\tInvalid choice. Please try again...")
-#             time.sleep(0.5)
-
-# def index_view(item_list):
-#     print(f"""
-#         Order status list:
-#         ------------------------------------""")
-#     for index, name in enumerate(item_list):
-#         print(f"\t[{index}] - {name}")
-#     print("")
-
-
-# def does_index_exist(products_list, o_items):
-#     for idx in o_items:
-#         try:
-#             products_list[idx]
-#         except (IndexError, ValueError):
-#             return False
-#     return True
-
-# def user_idx_choice(item_name, item_list, task):
-#     while True:
-#         try:
-#             clear_screen()
-#             index_view(item_name, item_list)
-#             idx_choice = int(input(f"\tPlease use index value for {item_name} details to be {task}. "))
-#             if idx_choice in range(len(item_list)):
-#                 return idx_choice
-#             else:
-#                 raise ValueError
-#         except ValueError:
-#             print("")
-#             print("\tInvalid choice. Please try again...")
-#             time.sleep(0.5)
-
-# def end_of_task_choice(item_name, task):
-#     while True:
-#         clear_screen()
-#         print("")
-#         user_choice = input(f"\tWould you like to {task} another {item_name}? [y / n] ")
-#         if user_choice == 'y':
-#             return True
-#         elif user_choice == 'n':
-#             return False
-#         else:
-#             print("")
-#             print("\tInvalid choice. Please try again...")
-
-
-
-
-
-# #Product, Courier & Order Deletion Function - COMPLETE
-# def item_del(item_name: str, item_list: List):
+def view_all_customers():
     
-#     check = True
-#     while check == True:
-#         idx_choice = user_idx_choice(item_name, item_list, 'deleted')
-#         while True:
-#             clear_screen()
-#             user_choice = input(f"\tAre you sure you want to remove {item_list[idx_choice]} ( y / n ): ").lower()                
-#             if user_choice == 'y':
-#                 print(f"\n {item_list[idx_choice]} has been removed.")
-#                 item_list.pop(idx_choice)
-#                 time.sleep(1)
-#                 break
-#             elif user_choice == 'n':
-#                 print(f"\n No {item_name}s has been deleted")
-#                 time.sleep(1)
-#                 break
-#             else:
-#                 print("\tInvalid choice. Please try again...")
-#         check = end_of_task_choice(item_name, 'delete')
+    sql = "SELECT customer_id, customer_name, customer_address, customer_phone FROM customers"
+    rows = sql_read(sql)
+    print("\n \tList of Customers: ")
+    print(f"\t{'Id:' :<7} | {'Customer Name:' :<17} | {'Customer Address:' :<50} | {'Customer Phone:' :<15} ")
+    for row in rows:
+        print(f"\t{row[0] :<7} | {str(row[1]) :<17} | {row[2] :<50} | {row[3] :<15} ")
+
+def customer_id_check(details: str):
+    
+    while True:
+        clear_screen()
+        view_all_customers()
+        id_choice = int_input_check(details)
+        sql = "SELECT customer_id FROM customers WHERE customer_id=%s"
+        data_check = sql_read(sql, id_choice)
+        if not data_check:
+            print(f"\n \tCustomer with Id: {id_choice} doesn't exists. Please try again or ...")
+            time.sleep(1)
+            continue
+        else:
+            return id_choice
